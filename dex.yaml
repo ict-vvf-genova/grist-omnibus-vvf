@@ -29,19 +29,9 @@ oauth2:
 
 connectors:
 
- - type: google
-   id: google
-   name: Google
-   config:
-     issuer: https://accounts.google.com
-     clientID: PUT_CLIENT_ID_HERE_PLEASE
-     clientSecret: PUT_GOOGLE_CLIENT_SECRET_HERE_PLEASE
-     redirectURI: '{{ getenv "APP_HOME_URL" }}/dex/callback'
-
- - type: microsoft
-   id: microsoft
-   name: Microsoft
-   config:
-     clientID: PUT_CLIENT_ID_HERE_PLEASE
-     clientSecret: PUT_CLIENT_SECRET_HERE_PLEASE
-     redirectURI: '{{ getenv "APP_HOME_URL" }}/dex/callback'
+- type: smtp
+  name: SMTP Vigilfuoco
+  id: smtp-vigilfuoco
+  config:
+    host: smtp-s.vigilfuoco.it:465
+    domain: vigilfuoco.it
