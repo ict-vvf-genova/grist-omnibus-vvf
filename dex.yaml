@@ -30,8 +30,10 @@ oauth2:
 connectors:
 
 - type: smtp
-  name: SMTP Vigilfuoco
+  name: Vigilfuoco
   id: smtp-vigilfuoco
   config:
     host: smtp-s.vigilfuoco.it:465
     domain: vigilfuoco.it
+    label: nome.cognome
+
