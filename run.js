@@ -93,10 +93,19 @@ function startTraefik() {
   }
   if (process.env.HTTPS) {
     flags.push("--entrypoints.websecure.address=:443")
+    // Redirect http -> https
+    // See: https://doc.traefik.io/traefik/routing/entrypoints/#redirection
+    flags.push("--entrypoints.web.http.redirections.entrypoint.scheme=https")
+    flags.push("--entrypoints.web.http.redirections.entrypoint.to=websecure")
+  }
+  let TFA_TRUST_FORWARD_HEADER = 'false';
+  if (process.env.TRUSTED_PROXY_IPS) {
+    flags.push(`--entryPoints.web.forwardedHeaders.trustedIPs=${process.env.TRUSTED_PROXY_IPS}`)
+    TFA_TRUST_FORWARD_HEADER = 'true';
   }
   log.info("Calling traefik", flags);
   essentialProcess("traefik", child_process.spawn('traefik', flags, {
-    env: process.env,
+    env: {...process.env, TFA_TRUST_FORWARD_HEADER},
     stdio: 'inherit',
     detached: true,
   }));
@@ -306,9 +315,16 @@ function addDexUsers() {
 async function waitForDex() {
   const fetchOptions = process.env.HTTPS ? {
     agent: new https.Agent({
-      // Allow self-signed certs for this wait loop. We only care if dex
-      // is up and running, not whether it has valid certs.
-      rejectUnauthorized: false,
+      // If we are responsible for certs, wait for them to be
+      // set up and valid - don't accept default self-signed
+      // traefik certs. Otherwise traefik-forward-auth will
+      // fail immediately if it sees a self-signed cert, without
+      // giving letsencrypt time to make one for us.
+      //
+      // Otherwise, don't fret, the responsibility for certs
+      // being in place before the rest of grist-omnibus starts
+      // lies elsewhere. We only care if dex is up and running.
+      rejectUnauthorized: (process.env.HTTPS === 'auto'),
     })
   } : {};
   let delay = 0.1;
